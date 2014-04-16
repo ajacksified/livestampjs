@@ -1,4 +1,5 @@
-// Livestamp.js / v1.1.2 / (c) 2012 Matt Bradley / MIT License
+// Livestamp.js / v1.2.0 / (c) 2014 Jack Lawson / MIT License / https://github.com/ajacksified/livestampjs
+// Fork of https://github.com/mattbradley/livestampjs by Matt Bradley
 (function (plugin) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
@@ -16,8 +17,9 @@
     livestampGlobal.resume();
   },
 
-  prep = function($el, timestamp) {
+  prep = function($el, timestamp, options) {
     var oldData = $el.data('livestampdata');
+
     if (typeof timestamp == 'number')
       timestamp *= 1e3;
 
@@ -28,6 +30,9 @@
     if (moment.isMoment(timestamp) && !isNaN(+timestamp)) {
       var newData = $.extend({ }, { 'original': $el.contents() }, oldData);
       newData.moment = moment(timestamp);
+
+      // optionally hide the "ago" if set to false. Default to showing.
+      newData.ago = options.ago || $el.attr('data-ago') || true;
 
       $el.data('livestampdata', newData).empty();
       $livestamps.push($el[0]);
@@ -55,8 +60,14 @@
         if (data === undefined)
           toRemove.push(this);
         else if (moment.isMoment(data.moment)) {
-          var from = $this.html(),
-              to = data.moment.fromNow();
+          var from = $this.html();
+
+          if(data.ago){
+            to = data.moment.fromNow();
+          }else{
+            // Hide the "ago"
+            to = data.moment.fromNow(true);
+          }
 
           if (from != to) {
             var e = $.Event('change.livestamp');
@@ -88,17 +99,25 @@
   },
 
   livestampLocal = {
-    add: function($el, timestamp) {
-      if (typeof timestamp == 'number')
-        timestamp *= 1e3;
-      timestamp = moment(timestamp);
+    add: function($el, options) {
+      $el.each(function() {
+        var timestamp = options.timestamp;
 
-      if (moment.isMoment(timestamp) && !isNaN(+timestamp)) {
-        $el.each(function() {
-          prep($(this), timestamp);
-        });
-        livestampGlobal.update();
-      }
+        if (typeof timestamp == 'number'){
+          timestamp *= 1e3;
+        }
+
+        if(options.attr && !timestamp){
+          timestamp  = $(this).attr(options.attr);
+        }
+
+        timestamp = moment(timestamp);
+
+        if (moment.isMoment(timestamp) && !isNaN(+timestamp)) {
+          prep($(this), timestamp, options);
+        }
+      });
+      livestampGlobal.update();
 
       return $el;
     },
@@ -136,3 +155,5 @@
     return livestampLocal[method](this, options);
   };
 }));
+
+

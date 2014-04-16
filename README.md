@@ -1,5 +1,5 @@
-[Livestamp.js](http://mattbradley.github.com/livestampjs)
-=====================================================
+[Livestamp.js](http://ajacksified.github.com/livestampjs)
+=========================================================
 
 A simple, unobtrusive jQuery plugin that provides auto-updating timeago text to
 your timestamped HTML elements using [Moment.js](http://momentjs.com).
